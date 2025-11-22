@@ -1,0 +1,764 @@
+<?xml version="1.0"?>
+<!-- ========================================================================== -->
+<!-- CuGo V3 Robot Description for Gazebo Fortress (Ignition Gazebo)          -->
+<!-- Modified from original Gazebo Classic version                             -->
+<!-- ROS2 Humble + Gazebo Fortress compatible                                  -->
+<!-- ========================================================================== -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="cugo_v3">
+
+  <!-- ========== Include Files ========== -->
+  <!-- Material colors definition -->
+  <xacro:include filename="$(find cugo_ros2_control)/models/cugo_v3/material_colors.xacro" />
+  <!-- Gazebo material macro definition -->
+  <xacro:include filename="$(find cugo_ros2_control)/models/cugo_v3/gazebo_material_macro.xacro" />
+  <!-- Ouster 3D LiDAR definition -->
+  <xacro:include filename="$(find clearpath_sensors_description)/urdf/ouster_os1.urdf.xacro" />
+
+  <!-- ========== Robot Physical Properties ========== -->
+  <!-- Body dimensions -->
+  <xacro:property name="body_width" value="0.42" />
+  <xacro:property name="body_depth" value="0.58" />
+  <xacro:property name="body_height" value="0.26" />
+
+  <!-- Tool box dimensions -->
+  <xacro:property name="tbox_width" value="0.42" />
+  <xacro:property name="tbox_depth" value="0.58" />
+  <xacro:property name="tbox_height" value="0.20" />
+
+  <!-- Collision box dimensions -->
+  <xacro:property name="body_collision_width" value="0.42" />
+  <xacro:property name="body_collision_depth" value="0.58" />
+  <xacro:property name="body_collision_height" value="0.20" />
+
+  <!-- Wheel dimensions -->
+  <xacro:property name="wheel_width" value="0.06" />
+  <xacro:property name="collision_wheel_width" value="0.145" />
+  <!-- Average diameter: chain (120mm) + sprocket (40mm) / 2 = 80mm -->
+  <xacro:property name="wheel_radius" value="0.04" />
+  <xacro:property name="wheel_diameter" value="0.08" />
+
+  <!-- Motor limits -->
+  <xacro:property name="max_wheel_acceleration" value="1.0" />
+  <xacro:property name="max_wheel_torque" value="5.0" />
+
+  <!-- Wheel positions -->
+  <xacro:property name="left_wheel_y" value="0.24" />
+  <xacro:property name="right_wheel_y" value="-0.24" />
+
+  <xacro:property name="front_wheel_x" value="0.172" />
+  <xacro:property name="front_wheel_z" value="-0.08" />
+
+  <xacro:property name="back_wheel_x" value="-0.172" />
+  <xacro:property name="back_wheel_z" value="-0.08" />
+
+  <xacro:property name="center_wheel_z" value="-0.105" />
+
+  <!-- ========== Robot Links and Joints ========== -->
+  
+  <!-- Base footprint link (ground contact point) -->
+  <link name="base_footprint"/>
+
+  <!-- Fixed joint connecting footprint to base_link -->
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.1065" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Base link (main reference frame) -->
+  <link name="base_link"/>
+
+  <!-- Fixed joint connecting base_link to body -->
+  <joint name="body_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="base_body"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Main body link with visual mesh -->
+  <link name="base_body">
+    <visual>
+      <geometry>
+        <!-- ========== MODIFIED: Changed from file:// to package:// protocol ========== -->
+        <!-- This allows ROS to find the mesh regardless of workspace location -->
+        <mesh filename="file://$(find cugo_ros2_control)/models/cugo_v3/meshes/roskit-Compound.dae" scale="1 1 1"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 -1.57"/>
+      <material name="red"/>
+    </visual>
+    <inertial>
+      <mass value="9.0"/>
+      <origin xyz="0 0 -0.03" rpy="0 0 0"/>
+      <inertia ixx="0.13542" iyy="0.10833" izz="0.17708" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Collision box joint -->
+  <joint name="body_collision_joint" type="fixed">
+    <parent link="base_body"/>
+    <child link="body_collision"/>
+    <origin xyz="0 0 ${body_collision_height/2+body_height/2-0.05}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Collision box link -->
+  <link name="body_collision">
+    <visual>
+      <geometry>
+        <box size="${body_collision_width} ${body_collision_depth} ${body_collision_height}"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${body_collision_width} ${body_collision_depth} ${body_collision_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.4"/>
+      <inertia ixx="0.13542" iyy="0.10833" izz="0.17708" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- ========== Left Wheels ========== -->
+  
+  <!-- Left center wheel 2 (main drive wheel) -->
+  <joint name="left_center_2_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="left_center_2_wheel"/>
+    <origin xyz="0 ${left_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_center_2_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left center wheel 1 (front center) -->
+  <joint name="left_center_1_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="left_center_1_wheel"/>
+    <origin xyz="${wheel_diameter} ${left_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_center_1_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left center wheel 3 (back center) -->
+  <joint name="left_center_3_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="left_center_3_wheel"/>
+    <origin xyz="-${wheel_diameter} ${left_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_center_3_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left front wheel -->
+  <joint name="left_front_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="left_front_wheel"/>
+    <origin xyz="${front_wheel_x} ${left_wheel_y} ${front_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_front_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left back wheel -->
+  <joint name="left_back_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="left_back_wheel"/>
+    <origin xyz="${back_wheel_x} ${left_wheel_y} ${back_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_back_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- ========== Right Wheels ========== -->
+  
+  <!-- Right center wheel 2 (main drive wheel) -->
+  <joint name="right_center_2_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="right_center_2_wheel"/>
+    <origin xyz="0 ${right_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_center_2_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Right center wheel 1 (front center) -->
+  <joint name="right_center_1_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="right_center_1_wheel"/>
+    <origin xyz="${wheel_diameter} ${right_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_center_1_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Right center wheel 3 (back center) -->
+  <joint name="right_center_3_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="right_center_3_wheel"/>
+    <origin xyz="-${wheel_diameter} ${right_wheel_y} ${center_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_center_3_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Right front wheel -->
+  <joint name="right_front_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="right_front_wheel"/>
+    <origin xyz="${front_wheel_x} ${right_wheel_y} ${front_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_front_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Right back wheel -->
+  <joint name="right_back_wheel_joint" type="continuous">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="2.0" velocity="25.0"/>
+    <parent link="base_body"/>
+    <child link="right_back_wheel"/>
+    <origin xyz="${back_wheel_x} ${right_wheel_y} ${back_wheel_z}" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_back_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+      <material name="dummy_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${collision_wheel_width}" radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- ========== Crawler Tracks ========== -->
+  
+  <!-- Left crawler track -->
+  <joint name="left_crawler_joint" type="fixed">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <parent link="base_body"/>
+    <child link="left_crawler"/>
+    <origin xyz="-0.01 0.22 -0.043" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="left_crawler">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- ========== MODIFIED: Changed from file:// to package:// protocol ========== -->
+        <mesh filename="file://$(find cugo_ros2_control)/models/cugo_v3/meshes/cugo_v3_l-CuGoV3_L001.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Right crawler track -->
+  <joint name="right_crawler_joint" type="fixed">
+    <axis xyz="0 0 -1" rpy="0 0 0"/>
+    <parent link="base_body"/>
+    <child link="right_crawler"/>
+    <origin xyz="-0.10 -0.2065 -0.055" rpy="0 1.57075 -1.57"/>
+  </joint>
+
+  <link name="right_crawler">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- ========== MODIFIED: Changed from file:// to package:// protocol ========== -->
+        <mesh filename="file://$(find cugo_ros2_control)/models/cugo_v3/meshes/cugo_v3_r-CuGoV3_R001.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00024" iyy="0.00024" izz="0.00015" ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- ========================================================================== -->
+  <!-- GAZEBO PLUGINS FOR IGNITION GAZEBO (FORTRESS)                             -->
+  <!-- ========================================================================== -->
+  
+  <!-- ========== DELETED: All Gazebo Classic plugins ========== -->
+  <!-- 
+  The following 5 Gazebo Classic differential drive plugins were removed:
+  - cugo_diff_drive
+  - cugo_diff_drive_mini_front  
+  - cugo_diff_drive_mini_back
+  - cugo_diff_drive_big_front
+  - cugo_diff_drive_big_back
+  
+  These used libgazebo_ros_diff_drive.so which is incompatible with Ignition Gazebo
+  -->
+
+  <!-- ========== NEW: Ignition Gazebo Differential Drive Plugin ========== -->
+  <!--
+  This single plugin replaces all 5 Gazebo Classic diff_drive plugins
+  It controls multiple drive wheels per side for better traction on slopes
+  Left side: center 1, 2, 3 wheels
+  Right side: center 1, 2, 3 wheels
+  -->
+  <gazebo>
+    <plugin filename="ignition-gazebo-diff-drive-system" 
+            name="ignition::gazebo::systems::DiffDrive">
+      
+      <!-- Left side drive wheel joints (ALL wheels for maximum traction) -->
+      <left_joint>left_front_wheel_joint</left_joint>
+      <left_joint>left_center_1_wheel_joint</left_joint>
+      <left_joint>left_center_2_wheel_joint</left_joint>
+      <left_joint>left_center_3_wheel_joint</left_joint>
+      <left_joint>left_back_wheel_joint</left_joint>
+      
+      <!-- Right side drive wheel joints (ALL wheels for maximum traction) -->
+      <right_joint>right_front_wheel_joint</right_joint>
+      <right_joint>right_center_1_wheel_joint</right_joint>
+      <right_joint>right_center_2_wheel_joint</right_joint>
+      <right_joint>right_center_3_wheel_joint</right_joint>
+      <right_joint>right_back_wheel_joint</right_joint>
+      
+      <!-- Wheel separation (tread width) in meters -->
+      <wheel_separation>0.460</wheel_separation>
+      
+      <!-- Wheel radius in meters (average: chain + sprocket) -->
+      <wheel_radius>0.04</wheel_radius>
+      
+      <!-- Odometry publishing frequency in Hz -->
+      <odom_publish_frequency>50</odom_publish_frequency>
+      
+      <!-- Command velocity topic (subscribes) -->
+      <topic>cmd_vel</topic>
+      
+      <!-- Odometry topic (publishes) -->
+      <odom_topic>/odom</odom_topic>
+      
+      <!-- Enable TF publishing (odom -> base_footprint) -->
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      
+      <!-- TF topic for coordinate transformations -->
+      <tf_topic>/tf</tf_topic>
+      
+      <!-- Odometry parent frame -->
+      <frame_id>odom</frame_id>
+      
+      <!-- Robot base frame (child of odom) -->
+      <child_frame_id>base_footprint</child_frame_id>
+      
+      <!-- Maximum linear acceleration in m/s^2 -->
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      
+      <!-- Maximum angular acceleration in rad/s^2 -->
+      <max_angular_acceleration>2.0</max_angular_acceleration>
+      
+      <!-- Maximum linear velocity in m/s (3.5 km/h = 0.972 m/s) -->
+      <min_velocity>-0.972</min_velocity>
+      <max_velocity>0.972</max_velocity>
+      
+    </plugin>
+  </gazebo>
+
+  <!-- ========== Joint State Publisher Plugin ========== -->
+  <gazebo>
+    <plugin filename="ignition-gazebo-joint-state-publisher-system"
+            name="ignition::gazebo::systems::JointStatePublisher">
+      <!-- All wheel joints -->
+      <joint_name>left_center_2_wheel_joint</joint_name>
+      <joint_name>right_center_2_wheel_joint</joint_name>
+      <joint_name>left_center_1_wheel_joint</joint_name>
+      <joint_name>right_center_1_wheel_joint</joint_name>
+      <joint_name>left_center_3_wheel_joint</joint_name>
+      <joint_name>right_center_3_wheel_joint</joint_name>
+      <joint_name>left_front_wheel_joint</joint_name>
+      <joint_name>right_front_wheel_joint</joint_name>
+      <joint_name>left_back_wheel_joint</joint_name>
+      <joint_name>right_back_wheel_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <!-- ========== Gazebo Material Properties ========== -->
+  <!-- These set friction coefficients for all wheels and collision surfaces -->
+  
+  <!-- Right side wheels -->
+  <xacro:gazebo_material ref="right_center_2_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="right_center_1_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="right_center_3_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="right_front_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="right_back_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+
+  <!-- Left side wheels -->
+  <xacro:gazebo_material ref="left_center_2_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="left_center_1_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="left_center_3_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="left_front_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+  
+  <xacro:gazebo_material ref="left_back_wheel" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+
+  <!-- Body collision box -->
+  <xacro:gazebo_material ref="body_collision" mu="0.8">
+    <material>Gazebo/GreyTransparent</material>
+  </xacro:gazebo_material>
+
+  <!-- ========== 3D LiDAR Sensor (Ouster OS1) ========== -->
+  <!--
+  Ouster OS1 3D LiDAR specifications (시뮬레이션 최적화 버전):
+  - 32 vertical channels (원본 64의 50%)
+  - 720 horizontal samples (원본 1024의 70%)
+  - 360-degree horizontal FOV
+  - Range: 0.5m to 120m
+  - Update rate: 10 Hz
+  
+  총 포인트/프레임: 720 × 32 = 23,040 (원본 65,536의 약 35%)
+  시뮬레이션 성능과 센서 품질의 균형을 맞춘 설정입니다.
+  -->
+  <xacro:arg name="namespace" default=""/>
+  <xacro:ouster_os1
+    name="ouster"
+    parent_link="base_link"
+    cap="halo"
+    base="base"
+    samples_h="720"
+    min_ang_h="${-pi}"
+    max_ang_h="${pi}"
+    samples_v="32"
+    min_ang_v="${-16.6 * pi/180}"
+    max_ang_v="${16.6 * pi/180}"
+    update_rate="10"
+    min_range="0.5"
+    max_range="120.0">
+    <!-- Mount position: centered on robot, 0.15m above base_link -->
+    <origin xyz="0.0 0.0 0.15" rpy="0 0 0"/>
+  </xacro:ouster_os1>
+
+  <!-- ========== IMU Sensor ========== -->
+  
+  <!-- IMU joint (fixed to base_link) -->
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <!-- Position: centered on robot body, 3cm above base_link (lowered for stability) -->
+    <origin xyz="0.0 0.0 0.03" rpy="0 0 0"/>
+  </joint>
+
+  <!-- IMU link with visual representation -->
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <!-- Small box representing IMU sensor -->
+        <box size="0.03 0.03 0.02"/>
+      </geometry>
+      <material name="dark"/>
+    </visual>
+    <collision>
+      <geometry>
+        <!-- Small box representing IMU sensor -->
+        <box size="0.03 0.03 0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1e-4" iyy="1e-4" izz="1e-4"
+               ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <!-- ========== Ignition Gazebo IMU Sensor ========== -->
+  <!--
+  IMU sensor provides:
+  - Linear acceleration (with gravity)
+  - Angular velocity (gyroscope)
+  - Orientation (computed from accelerometer + gyroscope)
+  
+  NOTE: This follows the same pattern as the LiDAR sensor above
+  No separate plugin tag needed - Ignition handles it internally
+  -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <!-- Sensor pose relative to parent link -->
+      <pose>0 0 0 0 0 0</pose>
+      
+      <!-- ROS topic name for IMU messages -->
+      <topic>imu</topic>
+      
+      <!-- Update rate in Hz -->
+      <update_rate>100</update_rate>
+      
+      <!-- Keep sensor always active -->
+      <always_on>1</always_on>
+      
+      <!-- Visualize IMU orientation in Gazebo GUI -->
+      <visualize>true</visualize>
+      
+      <!-- IMU configuration -->
+      <imu>
+        <!-- Enable orientation output -->
+        <orientation_enabled>true</orientation_enabled>
+        
+        <!-- Angular velocity (gyroscope) noise parameters -->
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </z>
+        </angular_velocity>
+        
+        <!-- Linear acceleration (accelerometer) noise parameters -->
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
+      
+      <!-- Frame ID for TF transformations -->
+      <!-- This must match the link name for proper TF tree -->
+      <ignition_frame_id>imu_link</ignition_frame_id>
+    </sensor>
+  </gazebo>
+
+</robot>

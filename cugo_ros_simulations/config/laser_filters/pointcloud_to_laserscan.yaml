@@ -27,13 +27,3 @@
     
     # Concurrency
     concurrency_level: 1
-    
-    # QoS Overrides for compatibility with SLAM and Nav2
-    qos_overrides:
-      /scan:
-        publisher:
-          reliability: reliable
-          durability: volatile
-          history: keep_last
-          depth: 10
-

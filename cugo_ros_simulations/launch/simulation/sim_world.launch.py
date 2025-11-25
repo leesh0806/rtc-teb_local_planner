@@ -12,7 +12,7 @@ def generate_launch_description():
         'world',
         default_value='cugo_v3_world',
         description='월드 선택: cugo_v3_world (평지) 또는 rubicon (산악)',
-        choices=['cugo_v3_world', 'rubicon']
+        choices=['cugo_v3_world', 'rubicon', 'tugbot_depot']
     )
     
     declare_x_arg = DeclareLaunchArgument(
@@ -110,11 +110,13 @@ def generate_launch_description():
             '/sensors/ouster/scan/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',  # ← 3D LiDAR
             '/world/cugo_world/model/cugo_v3/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',  # ← cugo_v3_world
             '/world/rubicon/model/cugo_v3/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',  # ← rubicon world
+            '/world/world_demo/model/cugo_v3/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
             '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',  # ← IMU
         ],
         remappings=[
             ('/world/cugo_world/model/cugo_v3/joint_state', '/joint_states'),  # ← cugo_v3_world
             ('/world/rubicon/model/cugo_v3/joint_state', '/joint_states'),  # ← rubicon world (같은 ROS 토픽으로 매핑)
+            ('/world/world_demo/model/cugo_v3/joint_state', '/joint_states'),  # ← world_demo world (같은 ROS 토픽으로 매핑)
             ('/imu', '/imu/data_raw'),  # ← IMU remapping
             ('/sensors/ouster/scan/points', '/ouster/points'),  # ← 3D LiDAR remapping
         ],

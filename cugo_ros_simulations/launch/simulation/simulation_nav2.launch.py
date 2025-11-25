@@ -88,6 +88,21 @@ def generate_launch_description():
             }.items(),
         ),
 
+        # Odom TF Publisher
+        # Gazebo의 /odom 토픽을 받아서 odom → base_footprint TF를 발행
+        Node(
+            package='cugo_ros2_control',
+            executable='odom_tf_publisher.py',
+            name='odom_tf_publisher',
+            parameters=[
+                {'odom_topic': '/odom'},
+                {'odom_frame': 'odom'},
+                {'base_frame': 'base_footprint'},
+                {'use_sim_time': use_sim_time}
+            ],
+            output='screen'
+        ),
+
         # RViz2
         Node(
             package='rviz2',

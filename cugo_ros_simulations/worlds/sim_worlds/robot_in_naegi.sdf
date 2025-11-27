@@ -1,0 +1,94 @@
+<sdf version='1.9'>
+    <world name="cugo_v3_in_orchard">
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    
+    <light name="sun_light" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>1.0</constant>
+        <linear>0.0</linear>
+        <quadratic>0.0</quadratic>
+      </attenuation>
+      <direction>-0.5 -0.5 -1</direction>
+    </light>
+
+    <scene>
+      <ambient>1 1 1 1</ambient>
+      <!-- <background>0.3 0.7 0.9 1</background> -->
+      <shadows>0</shadows>
+      <grid>1</grid>
+    </scene>
+
+    <model name="ground">
+      <self_collide>true</self_collide>
+      <pose>0 0 1 0 0 0</pose>
+      <include merge="true">
+        <uri>file:///home/robotics/dev_ws/cugo_ws/src/rtc-teb_local_planner/cugo_ros_simulations/worlds/ground/model_naegi.sdf</uri>
+      </include>
+      <static>1</static>
+      <!-- <link name='link'> -->
+        <!-- <collision name='collision'> -->
+          <!-- <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry> -->
+          <!-- <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface> -->
+        <!-- </collision> -->
+      <!-- </link> -->
+      <pose>0 0 0 0 0 0</pose>
+    </model>
+    
+
+    <!-- <model name="cugo_v3">
+      <self_collide>true</self_collide>
+      <pose>0 0 2 0 0 0</pose>
+      <include merge="true">
+        <uri>file:///home/robotics/ros2_ws/src/my_ros_gz_description/model/cugo_v3.sdf</uri>
+      </include>
+
+      <plugin
+        filename="ignition-gazebo-joint-state-publisher-system"
+        name="ignition::gazebo::systems::JointStatePublisher">
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-pose-publisher-system"
+        name="ignition::gazebo::systems::PosePublisher">
+        <publish_link_pose>true</publish_link_pose>
+        <use_pose_vector_msg>true</use_pose_vector_msg>
+        <static_publisher>true</static_publisher>
+        <static_update_frequency>1</static_update_frequency>
+      </plugin>
+    </model> -->
+
+  </world>
+</sdf>
+

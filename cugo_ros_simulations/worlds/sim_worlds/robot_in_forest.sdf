@@ -1,0 +1,350 @@
+<sdf version='1.9'>
+    <world name="cugo_v3_in_forest">
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+
+    <scene>
+      <ambient>1 1 1 1</ambient>
+      <background>0.3 0.7 0.9 1</background>
+      <shadows>0</shadows>
+      <grid>1</grid>
+    </scene>
+
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+      </link>
+      <pose>0 0 0 0 0 0</pose>
+    </model>
+
+
+
+    <!-- Row 1 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_0</name>
+      <pose>0 0 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_1</name>
+      <pose>10 0 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_2</name>
+      <pose>20 0 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_3</name>
+      <pose>30 0 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_4</name>
+      <pose>40 0 -0.03 0 -0 -0.006057</pose>
+    </include>
+    
+    <!-- Row 2 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_5</name>
+      <pose>0 10 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_6</name>
+      <pose>10 10 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_7</name>
+      <pose>20 10 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_8</name>
+      <pose>30 10 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_9</name>
+      <pose>40 10 -0.03 0 -0 -0.006057</pose>
+    </include>
+
+    <!-- Row 3 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_10</name>
+      <pose>0 20 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_11</name>
+      <pose>10 20 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_12</name>
+      <pose>20 20 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_13</name>
+      <pose>30 20 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_14</name>
+      <pose>40 20 -0.03 0 -0 -0.006057</pose>
+    </include>
+
+    <!-- Row 4 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_15</name>
+      <pose>0 30 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_16</name>
+      <pose>10 30 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_17</name>
+      <pose>20 30 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_18</name>
+      <pose>30 30 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_19</name>
+      <pose>40 30 -0.03 0 -0 -0.006057</pose>
+    </include>
+
+    <!-- Row 5 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_20</name>
+      <pose>0 40 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_21</name>
+      <pose>10 40 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_22</name>
+      <pose>20 40 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_23</name>
+      <pose>30 40 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_24</name>
+      <pose>40 40 -0.03 0 -0 -0.006057</pose>
+    </include>
+
+    <!-- Row 6 -->
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_25</name>
+      <pose>0 50 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_26</name>
+      <pose>10 50 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_27</name>
+      <pose>20 50 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_28</name>
+      <pose>30 50 -0.03 0 -0 -0.006057</pose>
+    </include>
+    <include>
+      <uri>https://fuel.ignitionrobotics.org/1.0/hexarotor/models/grasspatch</uri>
+      <name>grasspatch_29</name>
+      <pose>40 50 -0.03 0 -0 -0.006057</pose>
+    </include>
+
+    <!-- Oaktree Grid -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_1</name>
+      <pose>0 2.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_2</name>
+      <pose>5.12 2.34489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_3</name>
+      <pose>10.3 2.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_4</name>
+      <pose>16.2 2.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_5</name>
+      <pose>20.5 2.34489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_1_6</name>
+      <pose>25.6 2.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3</name>
+      <pose>0 6.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_4</name>
+      <pose>5 6.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_5</name>
+      <pose>10 6.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_6</name>
+      <pose>0 10.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_7</name>
+      <pose>5 10.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_8</name>
+      <pose>10 10.24489 0 0 -0 0</pose>
+    </include>
+
+        <!-- Oaktree Grid -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_1</name>
+      <pose>0 -2.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_2</name>
+      <pose>5.12 -2.34489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_3</name>
+      <pose>10.3 -2.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_4</name>
+      <pose>16.2 -2.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_5</name>
+      <pose>20.5 -2.34489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_3_6</name>
+      <pose>25.6 -2.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_1</name>
+      <pose>0 -6.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_2</name>
+      <pose>5 -6.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_3</name>
+      <pose>10 -6.24489 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_4</name>
+      <pose>0 -10.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_5</name>
+      <pose>5 -10.24489 0 0 -0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <name>Oaktree_2_6</name>
+      <pose>10 -10.24489 0 0 -0 0</pose>
+    </include>
+
+
+
+
+  </world>
+</sdf>
+
+

@@ -1,0 +1,366 @@
+#############################################
+# CuGo V3 Simulation Nav2 Config (Humble)
+# - Frame: map / odom / base_footprint
+# - Laser: /scan (LaserScan)
+# - Planner: Navfn
+# - Controller: TEB Local Planner
+#############################################
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+
+    # === Frames ===
+    base_frame_id: "base_footprint"
+    odom_frame_id: "odom"
+    global_frame_id: "map"
+
+    # === Laser topic (pointcloud_to_laserscan 결과) ===
+    scan_topic: "scan"  # /scan 으로 나가고 있으면 앞 / 붙여도 무방
+
+    # === Particle filter noise params (nav2 기본값 + 너가 준 amcl_params 참고) ===
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+
+    min_particles: 500
+    max_particles: 3000
+
+    # === Sensor model ===
+    laser_min_range: -1.0
+    laser_max_range: 100.0
+    laser_model_type: "likelihood_field"
+    laser_likelihood_max_dist: 2.0
+    z_hit: 0.5
+    z_short: 0.05
+    z_max: 0.05
+    z_rand: 0.5
+    sigma_hit: 0.2
+    lambda_short: 0.1
+
+    # === Update 조건 ===
+    update_min_d: 0.10
+    update_min_a: 0.20
+
+    # === Resampling ===
+    resample_interval: 1
+
+    # === Motion model ===
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+
+    # === TF 관련 ===
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    save_pose_rate: 0.5
+
+    # === 초기 Pose (필요하면 RViz에서 다시 찍어도 됨) ===
+    set_initial_pose: true
+    initial_pose: [0.0, 0.0, 0.0]  # x, y, yaw(rad)
+
+# ----------------------------------------------------
+# Map Server (static map 사용)
+# map yaml은 launch에서 override (--map) 됨
+# ----------------------------------------------------
+map_server:
+  ros__parameters:
+    use_sim_time: true
+    frame_id: "map"
+    yaml_filename: ""     # simulation_nav2.launch.py 에서 인자(map)로 덮어씀
+
+# ----------------------------------------------------
+# Global Planner (Navfn)
+# ----------------------------------------------------
+planner_server:
+  ros__parameters:
+    use_sim_time: true
+
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+
+# ----------------------------------------------------
+# Local Controller (TEB Local Planner)
+#   - Timed Elastic Band 기반 local planner
+# ----------------------------------------------------
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+
+    progress_checker_plugins: ["progress_checker"]
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    general_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      stateful: true
+
+    FollowPath:
+      plugin: "teb_local_planner::TebLocalPlannerROS"
+
+      # TEB 기본 설정
+      teb_autosize: 1.0
+      dt_ref: 0.3
+      dt_hysteresis: 0.1
+      max_samples: 500
+      global_plan_overwrite_orientation: false
+      allow_init_with_backwards_motion: false
+      max_global_plan_lookahead_dist: 3.0
+      global_plan_viapoint_sep: 0.3
+      global_plan_prune_distance: 1.0
+      exact_arc_length: false
+      feasibility_check_no_poses: 2
+      publish_feedback: false
+
+      # Robot 속도/가속도 제한
+      max_vel_x: 0.4
+      max_vel_theta: 1.0
+      acc_lim_x: 0.8
+      acc_lim_theta: 3.2
+
+      # Footprint 모델 (polygon 타입으로 설정)
+      footprint_model:
+        type: "polygon"
+        vertices: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+
+      # Goal Tolerance
+      free_goal_vel: false
+
+      # Obstacles
+      min_obstacle_dist: 0.27
+      inflation_dist: 0.6
+      include_costmap_obstacles: true
+      costmap_obstacles_behind_robot_dist: 1.0
+      obstacle_poses_affected: 15
+
+      dynamic_obstacle_inflation_dist: 0.6
+      include_dynamic_obstacles: true
+
+      costmap_converter_plugin: "costmap_converter::CostmapToPolygonsDBSMCCH"
+      costmap_converter_spin_thread: true
+      costmap_converter_rate: 5
+
+      # Optimization
+      no_inner_iterations: 5
+      no_outer_iterations: 4
+      optimization_activate: true
+      optimization_verbose: false
+      penalty_epsilon: 0.1
+      obstacle_cost_exponent: 4.0
+      weight_max_vel_x: 0.5
+      weight_max_vel_theta: 0.5
+      weight_acc_lim_x: 0.5
+      weight_acc_lim_theta: 10.5
+      weight_kinematics_nh: 1000.0
+      weight_kinematics_forward_drive: 3.0
+      weight_kinematics_turning_radius: 1.0
+      weight_optimaltime: 1.0
+      weight_shortest_path: 0.0
+      weight_obstacle: 100.0
+      weight_inflation: 0.2
+      weight_dynamic_obstacle: 10.0
+      weight_dynamic_obstacle_inflation: 0.2
+      weight_viapoint: 50.0
+      weight_adapt_factor: 2.0
+
+      # Homotopy Class Planner
+      enable_homotopy_class_planning: true
+      enable_multithreading: true
+      max_number_classes: 4
+      selection_cost_hysteresis: 5.0
+      selection_prefer_initial_plan: 1.0
+      selection_obst_cost_scale: 1.0
+      selection_alternative_time_cost: true
+
+      roadmap_graph_no_samples: 15
+      roadmap_graph_area_width: 5.0
+      roadmap_graph_area_length_scale: 1.0
+      h_signature_prescaler: 0.5
+      h_signature_threshold: 0.1
+      obstacle_heading_threshold: 0.45
+      switching_blocking_period: 0.0
+      viapoints_all_candidates: true
+      delete_detours_backwards: true
+      max_ratio_detours_duration_best_duration: 3.0
+      visualize_hc_graph: false
+      visualize_with_time_as_z_axis_scale: 0.0
+
+      # Recovery
+      shrink_horizon_backup: true
+      shrink_horizon_min_duration: 10.0
+      oscillation_recovery: true
+      oscillation_v_eps: 0.1
+      oscillation_omega_eps: 0.1
+      oscillation_recovery_min_duration: 10.0
+      oscillation_filter_duration: 10.0
+
+# ----------------------------------------------------
+# Behavior Tree Navigator
+# ----------------------------------------------------
+bt_navigator:
+  ros__parameters:
+    use_sim_time: true
+
+    global_frame: "map"
+    robot_base_frame: "base_footprint"
+    odom_topic: "/odom"
+
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    wait_for_service_timeout: 1000
+    action_server_result_timeout: 900.0
+
+    # 기본 navigator plugin들
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+
+# ----------------------------------------------------
+# Global Costmap (map frame 기반)
+# ----------------------------------------------------
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: true
+
+      global_frame: "map"
+      robot_base_frame: "base_footprint"
+
+      update_frequency: 1.0
+      publish_frequency: 1.0
+
+      # 시뮬 전체 맵 커버 대충 넉넉히 잡음 (필요하면 조정)
+      width: 30
+      height: 30
+      resolution: 0.05
+
+      track_unknown_space: true
+      rolling_window: false
+
+      # 로봇 footprint (대충 0.7 x 0.5 m 로 가정, 나중에 실제 크기에 맞게 수정)
+      footprint: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: "scan"
+        scan:
+          topic: "/scan"
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 5.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 4.0
+          obstacle_min_range: 0.0
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.4
+        cost_scaling_factor: 2.0
+
+      always_send_full_costmap: true
+
+# ----------------------------------------------------
+# Local Costmap (odom frame, rolling window)
+# ----------------------------------------------------
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: true
+
+      global_frame: "odom"
+      robot_base_frame: "base_footprint"
+
+      update_frequency: 10.0
+      publish_frequency: 5.0
+
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.05
+
+      footprint: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+
+      plugins: ["obstacle_layer", "inflation_layer"]
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: "scan"
+        scan:
+          topic: "/scan"
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.0
+          obstacle_min_range: 0.0
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.4
+        cost_scaling_factor: 2.0
+
+      always_send_full_costmap: true
+
+# ----------------------------------------------------
+# (선택) Map Saver - 꼭 필요하진 않지만 놔둬도 무방
+# ----------------------------------------------------
+map_saver:
+  ros__parameters:
+    use_sim_time: true
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+
+# ----------------------------------------------------
+# Lifecycle Managers
+#  - Localization: map_server + amcl
+#  - Navigation: planner / controller / bt_navigator 등
+# ----------------------------------------------------
+lifecycle_manager_localization:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names: ["map_server", "amcl"]
+
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names:
+      - "planner_server"
+      - "controller_server"
+      - "bt_navigator"
+      # smoother / behavior_server / waypoint_follower 등은
+      # 나중에 필요하면 추가로 구성

@@ -43,7 +43,7 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-install(DIRECTORY launch config models rviz worlds
+install(DIRECTORY launch config models rviz worlds evaluation
   DESTINATION share/${PROJECT_NAME}/
 )
 
@@ -54,6 +54,16 @@ install(PROGRAMS
   scripts/robot_state_publisher_node.py
   scripts/laser_scan_filter_node.py
   scripts/odom_tf_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Evaluation 스크립트 설치
+# 현재 repo에 존재하는 분석 스크립트만 설치하도록 제한
+install(PROGRAMS
+  evaluation/scenarios/waypoint_navigator.py
+  evaluation/scenarios/waypoint_definitions.py
+  evaluation/analysis/verify_parameters.py
+  evaluation/analysis/bag_to_csv.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

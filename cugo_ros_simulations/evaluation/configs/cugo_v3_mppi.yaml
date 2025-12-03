@@ -1,0 +1,391 @@
+#############################################
+# CuGo V3 Simulation Nav2 Config (Humble)
+# - Frame: map / odom / base_footprint
+# - Laser: /scan (LaserScan)
+# - Planner: Hybrid A* (SmacPlannerHybrid)
+# - Controller: MPPI Controller
+#############################################
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+    base_frame_id: "base_footprint"
+    odom_frame_id: "odom"
+    global_frame_id: "map"
+    scan_topic: "scan"
+    
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    
+    min_particles: 500
+    max_particles: 3000
+    
+    laser_min_range: -1.0
+    laser_max_range: 100.0
+    laser_model_type: "likelihood_field"
+    laser_likelihood_max_dist: 2.0
+    z_hit: 0.5
+    z_short: 0.05
+    z_max: 0.05
+    z_rand: 0.5
+    sigma_hit: 0.2
+    lambda_short: 0.1
+    
+    update_min_d: 0.10
+    update_min_a: 0.20
+    resample_interval: 1
+    
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    save_pose_rate: 0.5
+    
+    set_initial_pose: true
+    initial_pose: [0.0, 0.0, 0.0]
+
+map_server:
+  ros__parameters:
+    use_sim_time: true
+    frame_id: "map"
+    yaml_filename: ""
+
+# ----------------------------------------------------
+# Global Planner: Hybrid A* with GridBased name
+# ----------------------------------------------------
+planner_server:
+  ros__parameters:
+    use_sim_time: true
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlannerHybrid"
+      tolerance: 0.5
+      allow_unknown: true
+      
+      # 로봇 footprint (global costmap과 동일하게)
+      footprint: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+      
+      # 운동 모델
+      max_planning_time: 5.0
+      motion_model_for_search: "REEDS_SHEPP"
+      angle_quantization_bins: 72
+      
+      # 최소 회전 반경
+      min_turning_radius: 0.5
+      
+      # 비용 가중치
+      reverse_penalty: 2.0
+      change_penalty: 0.05
+      non_straight_penalty: 1.05
+      cost_penalty: 2.0
+      rotation_penalty: 5.0
+      
+      # 해석적 확장
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 3.0
+      analytic_expansion_max_cost: 200.0
+      
+      # 경로 스무딩
+      smooth_path: true
+      
+      # 최대 반복 횟수
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      
+      # Costmap 다운샘플링
+      downsample_costmap: false
+      downsampling_factor: 1
+
+# ----------------------------------------------------
+# Local Controller (MPPI Controller)
+# ----------------------------------------------------
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+
+    progress_checker_plugins: ["progress_checker"]
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    general_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      stateful: true
+
+    FollowPath:
+      plugin: "nav2_mppi_controller::MPPIController"
+      
+      # 시각화 및 디버깅
+      visualize: true  # 로컬 경로 시각화 활성화
+      
+      # 시간 단계 설정 (TEB와 동등한 예측 시간 지평)
+      # 예측 시간 = time_steps × model_dt = 80 × 0.05 = 4.0초
+      # 예측 거리 = v_max × T_pred = 0.4 × 4.0 = 1.6m
+      time_steps: 80
+      model_dt: 0.05
+      batch_size: 2000  # GPU 사용 시 높은 샘플링 수 유지
+      vx_std: 0.2
+      vy_std: 0.0
+      wz_std: 0.4
+      
+      # 속도 제한 (TEB와 동일하게)
+      vx_max: 0.4
+      vx_min: -0.2
+      vy_max: 0.0
+      wz_max: 1.0
+      
+      # 가속도 제한 (TEB와 유사하게)
+      ax_max: 0.8
+      ax_min: -0.8
+      ay_max: 0.0
+      az_max: 3.2
+      
+      # 로봇 모델
+      motion_model: "DiffDrive"
+      
+      # 비용 가중치
+      critics: [
+        "ConstraintCritic",
+        "CostCritic", 
+        "GoalCritic",
+        "GoalAngleCritic",
+        "PathAlignCritic",
+        "PathFollowCritic",
+        "PathAngleCritic",
+        "PreferForwardCritic"
+      ]
+      
+      # Critic 가중치 설정
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+      
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.4
+      
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5
+      
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.5
+      
+      # 장애물 회피 (TEB와 동일한 안전 거리)
+      # inflation_radius = TEB.inflation_dist = 0.6m
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.81
+        critical_cost: 300.0
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        inflation_radius: 0.6
+        inflation_layer_name: "inflation_layer"
+      
+      # 경로 추종
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 3
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+      
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+      
+      PathAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        mode: 0
+      
+      # 최적화 설정
+      iteration_count: 1
+      prune_distance: 1.7
+      transform_tolerance: 0.1
+      temperature: 0.3
+      gamma: 0.015
+      visualize: true  # MPPI 샘플링 궤적 시각화 활성화
+
+# ----------------------------------------------------
+# Behavior Tree Navigator
+# ----------------------------------------------------
+bt_navigator:
+  ros__parameters:
+    use_sim_time: true
+    global_frame: "map"
+    robot_base_frame: "base_footprint"
+    odom_topic: "/odom"
+    
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    wait_for_service_timeout: 1000
+    action_server_result_timeout: 900.0
+    
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+
+# ----------------------------------------------------
+# Global Costmap
+# ----------------------------------------------------
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: true
+      global_frame: "map"
+      robot_base_frame: "base_footprint"
+      
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      
+      width: 30
+      height: 30
+      resolution: 0.05
+      
+      track_unknown_space: true
+      rolling_window: false
+      
+      footprint: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+      
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: "scan"
+        scan:
+          topic: "/scan"
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 5.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 4.0
+          obstacle_min_range: 0.0
+      
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.4
+        cost_scaling_factor: 2.0
+      
+      always_send_full_costmap: true
+
+# ----------------------------------------------------
+# Local Costmap
+# ----------------------------------------------------
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: true
+      global_frame: "odom"
+      robot_base_frame: "base_footprint"
+      
+      update_frequency: 10.0
+      publish_frequency: 5.0
+      
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.05
+      
+      footprint: "[[0.35, 0.25], [0.35, -0.25], [-0.35, -0.25], [-0.35, 0.25]]"
+      
+      plugins: ["obstacle_layer", "inflation_layer"]
+      
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: "scan"
+        scan:
+          topic: "/scan"
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.0
+          obstacle_min_range: 0.0
+      
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.4
+        cost_scaling_factor: 2.0
+      
+      always_send_full_costmap: true
+
+# ----------------------------------------------------
+# Map Saver
+# ----------------------------------------------------
+map_saver:
+  ros__parameters:
+    use_sim_time: true
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+
+# ----------------------------------------------------
+# Lifecycle Managers
+# ----------------------------------------------------
+lifecycle_manager_localization:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names: ["map_server", "amcl"]
+
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: true
+    autostart: true
+    node_names:
+      - "planner_server"
+      - "controller_server"
+      - "smoother_server"
+      - "behavior_server"
+      - "bt_navigator"
+      - "waypoint_follower"
+      - "velocity_smoother"
+
